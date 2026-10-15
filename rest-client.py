@@ -11,6 +11,12 @@ import random
 import argparse
 
 
+# Vectors are generated once so the timing measures the request,
+# not the random number generation.
+VEC_A = [random.random() for _ in range(100)]
+VEC_B = [random.random() for _ in range(100)]
+
+
 def doRawImage(addr, debug=False):
 
     # prepare headers for http request
@@ -31,7 +37,6 @@ def doAdd(addr, debug=False):
 
     headers = {'content-type': 'application/json'}
 
-    # send http request with image and receive response
     add_url = addr + "/api/add/5/10"
     response = requests.post(add_url, headers=headers)
 
@@ -41,11 +46,32 @@ def doAdd(addr, debug=False):
 
 
 def doDotProduct(addr, debug=False):
-    pass
+
+    headers = {'content-type': 'application/json'}
+
+    dot_url = addr + "/api/dotproduct"
+    payload = json.dumps({'a': VEC_A, 'b': VEC_B})
+    response = requests.post(dot_url, data=payload, headers=headers)
+
+    if debug:
+        print("Response is", response)
+        print(json.loads(response.text))
 
 
 def doJsonImage(addr, debug=False):
-    pass
+
+    headers = {'content-type': 'application/json'}
+
+    img = open('Flatirons_Winter_Sunrise_edit_2.jpg', 'rb').read()
+    encoded = base64.b64encode(img).decode('utf-8')
+
+    json_url = addr + "/api/jsonimage"
+    payload = json.dumps({'image': encoded})
+    response = requests.post(json_url, data=payload, headers=headers)
+
+    if debug:
+        print("Response is", response)
+        print(json.loads(response.text))
 
 
 # ---------------------------------------------------------
@@ -144,4 +170,3 @@ elif args.cmd == 'dotProduct':
 
     delta = ((time.perf_counter() - start) / args.reps) * 1000
     print("Took", delta, "ms per operation")
-
